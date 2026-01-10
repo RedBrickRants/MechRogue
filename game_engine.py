@@ -42,13 +42,11 @@ class Engine:
         return self.mech.x, self.mech.y  # fallback (corpse ejection)
 
     def enter_mech(self):
-        print ("player entering mech")
         self.player.is_active = False
         self.player.container = self.mech
         self.controlled_entity = self.mech
 
     def exit_mech(self):
-        print ("player exiting mech")
         self.player.is_active = True
         self.player.container = None
         self.player.x, self.player.y = self.find_exit_tile()
@@ -61,13 +59,12 @@ class Engine:
         dy = abs(self.player.y - self.mech.y)
         return dx + dy == 1
     
-    def togggle_controlled_entity(self):
+    def toggle_controlled_entity(self):
         if self.controlled_entity == self.player:
             if self.can_enter_mech():
-                self.player.is_active = False
-                self.player.container = self.mech
-        else:
-            self.controlled_entity = self.player
+                self.enter_mech()
+        elif self.controlled_entity == self.mech:
+           self.exit_mech()
     
     
     def handle_input(self, event):
@@ -83,7 +80,7 @@ class Engine:
         elif event.sym == tcod.event.KeySym.RIGHT:
             self.controlled_entity.move(1, 0, self.game_map.width, self.game_map.height)
         elif event.sym == tcod.event.KeySym.e:
-           self.togggle_controlled_entity()
+            self.toggle_controlled_entity()
         elif event.sym == tcod.event.KeySym.q:
             return True  # signal quit
 

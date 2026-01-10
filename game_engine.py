@@ -13,7 +13,7 @@ class Engine:
         self.entities = [self.player, self.mech]
         self.controlled_entity = self.player
         self.enemies = []
-        
+        self.log_messages = []
     def is_blocked(self,x, y, entities):
         for entity in entities:
             if entity.x == x and entity.y == y and entity.is_active:
@@ -42,11 +42,13 @@ class Engine:
         return self.mech.x, self.mech.y  # fallback (corpse ejection)
 
     def enter_mech(self):
+        self.log_messages.append("You enter the mech.")
         self.player.is_active = False
         self.player.container = self.mech
         self.controlled_entity = self.mech
 
     def exit_mech(self):
+        self.log_messages.append("You exit the mech.")
         self.player.is_active = True
         self.player.container = None
         self.player.x, self.player.y = self.find_exit_tile()

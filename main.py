@@ -33,7 +33,8 @@ def main ():
             game_renderer.render_game_bounds(root_console)
             #Draw the player stats
             game_renderer.render_stats(root_console, engine.controlled_entity)
-
+            #Draw the log messages
+            game_renderer.render_log(root_console, engine.log_messages)
             #present console to context (draw to screen)
             context.present(root_console)
             #listen for and handle events

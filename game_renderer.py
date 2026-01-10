@@ -46,4 +46,10 @@ def render_stats(console, entity):
         console.print(x, y, f"{label}: {value}", fg=colour)
         y += 1
 
-    # Log renderer
+# Log renderer
+def render_log(console, log_messages: List[str]): 
+    x = 2
+    y = MAP_HEIGHT + 3
+    for message in log_messages[-(console.height - MAP_HEIGHT - 3):]: 
+        console.print(x, y, message, fg=(200, 200, 200))
+        y += 1

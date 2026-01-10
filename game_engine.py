@@ -27,6 +27,27 @@ class MessageLog:
         # Otherwise create a new message
         self.messages.append(Message(text, colour))
 
+class Action:
+    def __init__(self, entity):
+        self.entity = entity
+    def perform(self):
+        raise NotImplementedError()
+class MoveAction(Action):
+    def __init__(self, entity, dx, dy):
+        super().__init__(entity)
+        self.dx = dx
+        self.dy = dy
+    def perform(self, engine):
+        engine.try_move(self.entity, self.dx, self.dy)
+
+class WaitAction(Action):
+    def perform(self, engine):
+        engine.message_log.add(f"{self.entity.name} waits.", colour=(173, 216, 230))
+
+class ToggleControlAction(Action):
+    def perform(self, engine):
+        engine.toggle_controlled_entity()
+
 class Engine:
     def __init__(self):
         self.player = Entity("Player", "@", (255, 155, 55), SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, base_stats, is_mech=False, blocks=True)
@@ -40,13 +61,7 @@ class Engine:
         self.turn_count = 0
         self.player_acted = False # Track if player has acted this turn
 
-    def update(self):
-        if not self.player_acted:
-            return
 
-        self.handle_enemy_turns()
-        self.turn_count += 1
-        self.player_acted = False
 
     def handle_enemy_turns(self):
         for enemy in self.enemies:
@@ -134,45 +149,50 @@ class Engine:
     def try_move(self, entity, dx, dy):
         dest_x = entity.x + dx
         dest_y = entity.y + dy
-
         # Map bounds check
         if not self.game_map.in_bounds(dest_x, dest_y):
             return
-
         blocker = self.get_blocking_entity_at(dest_x, dest_y)
-
         if blocker:
             return
-
         entity.x = dest_x
         entity.y = dest_y
-    
+
+    def perform(self, action):
+        action.perform(self)
+        self.player_acted = True
+
+
+    def update(self):
+        if not self.player_acted:
+            return
+
+        self.handle_enemy_turns()
+        self.turn_count += 1
+        self.player_acted = False   
+
     def handle_input(self, event):
         if event.type != "KEYDOWN":
             return False
         acted = False
         if event.sym == tcod.event.KeySym.UP:
-            self.try_move(self.controlled_entity, 0, -1)
-            acted = True
+            action = MoveAction(self.controlled_entity, 0, -1)
         elif event.sym == tcod.event.KeySym.DOWN:
-            self.try_move(self.controlled_entity, 0, 1)
-            acted = True
+            action = MoveAction(self.controlled_entity, 0, 1)
         elif event.sym == tcod.event.KeySym.LEFT:
-            self.try_move(self.controlled_entity, -1, 0)
-            acted = True
+            action = MoveAction(self.controlled_entity, -1, 0)
         elif event.sym == tcod.event.KeySym.RIGHT:
-            self.try_move(self.controlled_entity, 1, 0)
-            acted = True
+            action = MoveAction(self.controlled_entity, 1, 0)
         elif event.sym == tcod.event.KeySym.e:
-            self.toggle_controlled_entity()
-            acted = True
+            action = ToggleControlAction(self.controlled_entity)
         elif event.sym == tcod.event.KeySym.PERIOD:
-            self.message_log.add("You wait for a moment.", colour=(173, 216, 230))  
-            acted = True
+            action = WaitAction(self.controlled_entity)
         elif event.sym == tcod.event.KeySym.q:
             return True  # signal quit
-        if acted:
-            self.player_acted = True
+        else:
+            action = None
+        if action:
+            self.perform(action)
 
         return False
 

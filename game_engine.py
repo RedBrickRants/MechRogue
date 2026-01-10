@@ -1,3 +1,4 @@
+import actions
 import tcod 
 from collections import deque
 from dataclasses import dataclass # deque is a double-ended queue, useful for adding/removing list elements from both ends efficiently
@@ -5,6 +6,7 @@ from game_entity import Entity
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, base_stats,mech_base_stats ,enemy_base_stats, MAP_WIDTH, MAP_HEIGHT
 import random
 from game_map import GameMap
+from game_input_handler import InputHandler
 
 @dataclass
 class Message:
@@ -27,29 +29,11 @@ class MessageLog:
         # Otherwise create a new message
         self.messages.append(Message(text, colour))
 
-class Action:
-    def __init__(self, entity):
-        self.entity = entity
-    def perform(self):
-        raise NotImplementedError()
-class MoveAction(Action):
-    def __init__(self, entity, dx, dy):
-        super().__init__(entity)
-        self.dx = dx
-        self.dy = dy
-    def perform(self, engine):
-        engine.try_move(self.entity, self.dx, self.dy)
 
-class WaitAction(Action):
-    def perform(self, engine):
-        engine.message_log.add(f"{self.entity.name} waits.", colour=(173, 216, 230))
-
-class ToggleControlAction(Action):
-    def perform(self, engine):
-        engine.toggle_controlled_entity()
 
 class Engine:
     def __init__(self):
+        self.input_handler = InputHandler(self) # Initialize input handler
         self.player = Entity("Player", "@", (255, 155, 55), SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, base_stats, is_mech=False, blocks=True)
         self.mech = Entity("Mech", "M", (100, 100, 255), SCREEN_WIDTH // 2 + 1, SCREEN_HEIGHT // 2, mech_base_stats, is_mech=True, blocks=True)
         self.game_map = GameMap()
@@ -61,7 +45,12 @@ class Engine:
         self.turn_count = 0
         self.player_acted = False # Track if player has acted this turn
 
-
+    def damage_entity(self, entity: Entity, damage: int):
+        entity.stats["hp"] -= damage
+        self.message_log.add(f"{entity.name} takes {damage} damage!", colour=(255, 0, 0))
+        if entity.stats["hp"] <= 0:
+            entity.is_active = False
+            self.message_log.add(f"{entity.name} has been destroyed!", colour=(255, 0, 0))
 
     def handle_enemy_turns(self):
         for enemy in self.enemies:
@@ -80,11 +69,7 @@ class Engine:
             else:
                 self.try_move(enemy, 0, step_y)
 
-    def is_blocked(self,x, y, entities):
-        for entity in entities:
-            if entity.x == x and entity.y == y and entity.is_active:
-                return True
-        return False
+    
     
     def get_blocking_entity_at(self, x, y):
         for entity in self.entities:
@@ -102,7 +87,7 @@ class Engine:
         while True:
             x = random.randint(0, MAP_WIDTH - 1)
             y = random.randint(0, MAP_HEIGHT - 1)
-            if not self.is_blocked(x, y, self.entities):
+            if not self.game_map.is_blocked(x, y, self.entities):
                 return Entity("Grunt", "g", (200, 50, 50), x, y, enemy_base_stats, is_mech=False, blocks=True)
             
     def spawn_enemies(self, count: int):
@@ -115,7 +100,7 @@ class Engine:
         for dx, dy in [(0,1), (1,0), (0,-1), (-1,0)]:
             x = self.mech.x + dx
             y = self.mech.y + dy
-            if not self.is_blocked(x, y, self.entities):
+            if not self.game_map.is_blocked(x, y, self.entities):
                 return x, y
         return self.mech.x, self.mech.y  # fallback (corpse ejection)
 
@@ -154,13 +139,16 @@ class Engine:
             return
         blocker = self.get_blocking_entity_at(dest_x, dest_y)
         if blocker:
+            attack = actions.AttackAction(entity, blocker)
+            self.perform(attack)
             return
         entity.x = dest_x
         entity.y = dest_y
 
     def perform(self, action):
-        action.perform(self)
-        self.player_acted = True
+        return action.perform(self) #do the action
+        
+        
 
 
     def update(self):
@@ -172,27 +160,16 @@ class Engine:
         self.player_acted = False   
 
     def handle_input(self, event):
-        if event.type != "KEYDOWN":
+        action = self.input_handler.handle_input(event)
+        
+        if not action:
             return False
-        acted = False
-        if event.sym == tcod.event.KeySym.UP:
-            action = MoveAction(self.controlled_entity, 0, -1)
-        elif event.sym == tcod.event.KeySym.DOWN:
-            action = MoveAction(self.controlled_entity, 0, 1)
-        elif event.sym == tcod.event.KeySym.LEFT:
-            action = MoveAction(self.controlled_entity, -1, 0)
-        elif event.sym == tcod.event.KeySym.RIGHT:
-            action = MoveAction(self.controlled_entity, 1, 0)
-        elif event.sym == tcod.event.KeySym.e:
-            action = ToggleControlAction(self.controlled_entity)
-        elif event.sym == tcod.event.KeySym.PERIOD:
-            action = WaitAction(self.controlled_entity)
-        elif event.sym == tcod.event.KeySym.q:
-            return True  # signal quit
-        else:
-            action = None
-        if action:
-            self.perform(action)
+        
+        result = self.perform(action) #result will be an action or True for quit
 
+        if result == "QUIT":
+            return True
+        self.player_acted = True
         return False
+
 

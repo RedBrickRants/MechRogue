@@ -33,9 +33,13 @@ def render_stats(console, entity, start_x, start_y):
     return y
 
 # Log renderer
-def render_log(console, log_messages: List[str]): 
-    x = 2
-    y = MAP_HEIGHT + 3
-    for message in log_messages[-(console.height - MAP_HEIGHT - 3):]: 
-        console.print(x, y, message, fg=(200, 200, 200))
-        y += 1
+def render_log(console, log_messages: List[str], x, y, height): 
+    messages_to_render = list(log_messages)[-height:]
+    for i, message in enumerate(messages_to_render): 
+        text = message.text
+        if message.count > 1:
+            text += f" (x{message.count})"
+
+        console.print(x, y+i, text, fg=message.colour)
+
+

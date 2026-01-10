@@ -35,6 +35,10 @@ def main ():
             stats_x = MAP_WIDTH + 2
             stats_y = 3
 
+            log_x = 2
+            log_y = MAP_HEIGHT + 3
+            log_height = SCREEN_HEIGHT - MAP_HEIGHT - 3
+
             game_renderer.render_stats(root_console, engine.player, stats_x, stats_y)
 
             stats_y += len(engine.player.stats) + 2  #space between stat panels
@@ -42,7 +46,7 @@ def main ():
                 game_renderer.render_stats(root_console, engine.controlled_entity, stats_x, stats_y)
                 
             #Draw the log messages
-            game_renderer.render_log(root_console, engine.log_messages)
+            game_renderer.render_log(root_console, engine.message_log.messages, log_x, log_y, log_height)
             #present console to context (draw to screen)
             context.present(root_console)
             #listen for and handle events

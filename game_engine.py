@@ -28,23 +28,6 @@ class MessageLog:
         self.messages.append(Message(text, colour))
 
 class Engine:
-    def try_move(self, entity, dx, dy):
-        dest_x = entity.x + dx
-        dest_y = entity.y + dy
-
-        # Map bounds check
-        if not self.game_map.in_bounds(dest_x, dest_y):
-            return
-
-        blocker = self.get_blocking_entity_at(dest_x, dest_y)
-
-        if blocker:
-            return
-
-        entity.x = dest_x
-        entity.y = dest_y
-
-
     def __init__(self):
         self.player = Entity("Player", "@", (255, 155, 55), SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, base_stats, is_mech=False, blocks=True)
         self.mech = Entity("Mech", "M", (100, 100, 255), SCREEN_WIDTH // 2 + 1, SCREEN_HEIGHT // 2, mech_base_stats, is_mech=True, blocks=True)
@@ -54,6 +37,33 @@ class Engine:
         self.message_log = MessageLog()
         self.enemies = []
         self.log_messages = []  # List of log messages for rendering
+        self.turn_count = 0
+        self.player_acted = False # Track if player has acted this turn
+
+    def update(self):
+        if not self.player_acted:
+            return
+
+        self.handle_enemy_turns()
+        self.turn_count += 1
+        self.player_acted = False
+
+    def handle_enemy_turns(self):
+        for enemy in self.enemies:
+            if not enemy.is_active:
+                continue
+
+            dx = self.controlled_entity.x - enemy.x
+            dy = self.controlled_entity.y - enemy.y
+
+            step_x = 0 if dx == 0 else (1 if dx > 0 else -1)
+            step_y = 0 if dy == 0 else (1 if dy > 0 else -1)
+
+            # Pick a direction to try (no pathfinding yet)
+            if abs(dx) > abs(dy):
+                self.try_move(enemy, step_x, 0)
+            else:
+                self.try_move(enemy, 0, step_y)
 
     def is_blocked(self,x, y, entities):
         for entity in entities:
@@ -121,25 +131,48 @@ class Engine:
         elif self.controlled_entity == self.mech:
            self.exit_mech()
     
+    def try_move(self, entity, dx, dy):
+        dest_x = entity.x + dx
+        dest_y = entity.y + dy
+
+        # Map bounds check
+        if not self.game_map.in_bounds(dest_x, dest_y):
+            return
+
+        blocker = self.get_blocking_entity_at(dest_x, dest_y)
+
+        if blocker:
+            return
+
+        entity.x = dest_x
+        entity.y = dest_y
     
     def handle_input(self, event):
         if event.type != "KEYDOWN":
             return False
-
+        acted = False
         if event.sym == tcod.event.KeySym.UP:
             self.try_move(self.controlled_entity, 0, -1)
+            acted = True
         elif event.sym == tcod.event.KeySym.DOWN:
             self.try_move(self.controlled_entity, 0, 1)
+            acted = True
         elif event.sym == tcod.event.KeySym.LEFT:
             self.try_move(self.controlled_entity, -1, 0)
+            acted = True
         elif event.sym == tcod.event.KeySym.RIGHT:
             self.try_move(self.controlled_entity, 1, 0)
+            acted = True
         elif event.sym == tcod.event.KeySym.e:
             self.toggle_controlled_entity()
+            acted = True
         elif event.sym == tcod.event.KeySym.PERIOD:
             self.message_log.add("You wait for a moment.", colour=(173, 216, 230))  
+            acted = True
         elif event.sym == tcod.event.KeySym.q:
             return True  # signal quit
+        if acted:
+            self.player_acted = True
 
         return False
 

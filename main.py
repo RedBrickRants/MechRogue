@@ -49,12 +49,13 @@ def main ():
             game_renderer.render_log(root_console, engine.message_log.messages, log_x, log_y, log_height)
             #present console to context (draw to screen)
             context.present(root_console)
+
             #listen for and handle events
             for event in tcod.event.wait():
                 if isinstance(event, tcod.event.Quit):
                     return  #exit game loop and end program
                 if engine.handle_input(event):
                     return
-
+            engine.update()
 if __name__ == "__main__":
     main()

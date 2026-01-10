@@ -32,7 +32,15 @@ def main ():
             #Draw the map 
             game_renderer.render_game_bounds(root_console)
             #Draw the player stats
-            game_renderer.render_stats(root_console, engine.controlled_entity)
+            stats_x = MAP_WIDTH + 2
+            stats_y = 3
+
+            game_renderer.render_stats(root_console, engine.player, stats_x, stats_y)
+
+            stats_y += len(engine.player.stats) + 2  #space between stat panels
+            if engine.controlled_entity != engine.player:
+                game_renderer.render_stats(root_console, engine.controlled_entity, stats_x, stats_y)
+                
             #Draw the log messages
             game_renderer.render_log(root_console, engine.log_messages)
             #present console to context (draw to screen)

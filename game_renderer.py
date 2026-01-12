@@ -29,9 +29,9 @@ def render_map(console, map, camera):
         for y in range(map.height):
             screen_x = x-camera.x
             screen_y = y-camera.y
-        if 0<=screen_x<camera.width and 0<=screen_y<camera.height:
-            tile = map.tiles[x][y]
-            console.print(camera.x, camera.y, tile.glyph, fg=tile.colour)
+            if 0<=screen_x<camera.width and 0<=screen_y<camera.height:
+                tile = map.tiles[x][y]
+                console.print(screen_x, screen_y, tile.glyph, fg=tile.colour)
         
 
 def render_stats(console, entity, start_x, start_y):

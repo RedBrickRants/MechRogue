@@ -171,6 +171,8 @@ class Engine:
             attack = actions.AttackAction(entity, blocker)
             self.perform(attack)
             return
+        if self.game_map.is_tile_blocked(dest_x, dest_y):
+            return
         entity.x = dest_x
         entity.y = dest_y
 

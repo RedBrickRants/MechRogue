@@ -23,12 +23,15 @@ class GameMap:
 
     def in_bounds(self, x, y):
         return 0 <= x < self.width and 0 <= y < self.height
-
-    def is_blocked(self,x, y, entities):
+    
+    def is_tile_blocked(self,x,y):
         if not self.in_bounds(x,y):
             return True
         if not self.tiles[x][y].iswalkable:
             return True
+        
+    def is_blocked(self,x, y, entities):
+  
         for entity in entities:
             if entity.x == x and entity.y == y and entity.is_active:
                 return True

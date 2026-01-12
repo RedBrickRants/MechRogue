@@ -1,0 +1,40 @@
+from game_entity import Entity
+from game_map import GameMap
+from constants import MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT, base_stats, mech_base_stats, enemy_base_stats
+import random
+
+
+class World:
+    def __init__ (self):
+        self.game_map = GameMap(MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT)
+        self.player = Entity("Player", "@", (255, 155, 55), MAP_WORLD_WIDTH //2, MAP_WORLD_HEIGHT//2, base_stats, False, True)
+        self.mech = Entity("Mech", "M", (100,100,255), MAP_WORLD_WIDTH//2 +1, MAP_WORLD_HEIGHT//2, mech_base_stats, False, True)
+
+        #Entity List
+        self.entities=[self.player, self.mech]
+        self.enemies=[]
+
+    def get_blocking_entity_at(self, x, y):
+        for entity in self.entities:
+            if (
+                entity.blocks
+                and entity.is_active
+                and entity.x == x
+                and entity.y == y
+            ):
+                return entity
+        return None
+
+
+    def spawn_enemy(self, x, y):
+        while True:
+            x = random.randint(0, MAP_WORLD_WIDTH - 1)
+            y = random.randint(0, MAP_WORLD_HEIGHT - 1)
+            if not self.game_map.is_blocked(x, y, self.entities):
+                return Entity("Grunt", "g", (200, 50, 50), x, y, enemy_base_stats, is_mech=False, blocks=True)
+        
+    def spawn_enemies(self, count: int):
+        for _ in range(count):
+            enemy = self.spawn_enemy(0, 0)
+            self.enemies.append(enemy)
+            self.entities.append(enemy)

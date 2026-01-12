@@ -10,7 +10,7 @@ from game_entity import Entity
 
 def main ():
     engine = Engine()
-    engine.spawn_enemies(5)
+    engine.world.spawn_enemies(5)
 
     # Set tileset
     tileset = tcod.tileset.load_tilesheet(
@@ -41,20 +41,20 @@ def main ():
                 root_console.clear()
                 #Draw the map 
                 engine.camera.follow(engine.controlled_entity)
-                game_renderer.render_map(root_console, engine.game_map, engine.camera)
+                game_renderer.render_map(root_console, engine.world.game_map, engine.camera)
 
                 #Draw the entites at their current position
-                game_renderer.render_entities(root_console, engine.entities, engine.camera)
+                game_renderer.render_entities(root_console, engine.world.entities, engine.camera)
                 
                 game_renderer.render_game_bounds(root_console)
                 
                 #Draw the player stats
                 
 
-                game_renderer.render_stats(root_console, engine.player, stats_x, stats_y)
+                game_renderer.render_stats(root_console, engine.world.player, stats_x, stats_y)
 
-                stats_y += len(engine.player.stats) + 2  #space between stat panels
-                if engine.controlled_entity != engine.player:
+                stats_y += len(engine.world.player.stats) + 2  #space between stat panels
+                if engine.controlled_entity != engine.world.player:
                     game_renderer.render_stats(root_console, engine.controlled_entity, stats_x, stats_y)
                     
                 #Draw the log messages

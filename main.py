@@ -7,10 +7,14 @@ from typing import List, Tuple, Optional
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT, MAP_VIEW_WIDTH, MAP_VIEW_HEIGHT
 import game_renderer
 from game_entity import Entity
+import time
 
 def main ():
+    start = time.perf_counter()
     engine = Engine()
-    engine.world.spawn_enemies(5)
+    print(f"Engine init: { time.perf_counter() - start}")
+    engine.world.spawn_enemies(500)
+    print(f"Spawn enemies:{time.perf_counter() - start}")
 
     # Set tileset
     tileset = tcod.tileset.load_tilesheet(

@@ -15,7 +15,7 @@ def render_game_bounds(console):
     console.print(2, MAP_VIEW_HEIGHT + 1, "LOG")
     
 
-def render_entities(console, entities, camera):
+def render_entities(console, entities, camera, visible_tiles):
     for entity in entities:
         if not entity.is_active:
             continue
@@ -32,7 +32,7 @@ def render_map(console, map, camera, visible_tiles):
             if not (0 <= screen_x < camera.width and 0 <= screen_y < camera.height):
                 continue
             tile = map.tiles[x][y]
-            
+
             if visible_tiles[x, y]:
                 console.print(screen_x, screen_y, tile.glyph, fg=tile.colour)
             elif tile.explored:

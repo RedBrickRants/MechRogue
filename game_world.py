@@ -31,7 +31,7 @@ class World:
         while True:
             x = random.randint(0, MAP_WORLD_WIDTH - 1)
             y = random.randint(0, MAP_WORLD_HEIGHT - 1)
-            if not self.game_map.is_blocked(x, y, self.entities):
+            if not self.game_map.is_blocked(x, y, self.entities) and not self.game_map.is_tile_blocked(x,y):
                 return Entity("Grunt", "g", (200, 50, 50), x, y, enemy_base_stats, is_mech=False, blocks=True)
         
     def spawn_enemies(self, count: int):

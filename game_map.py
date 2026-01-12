@@ -18,6 +18,7 @@ class RectRoom:
         self.y1 = y
         self.x2 = x + w
         self.y2 = y + h
+        self.sub_rooms = []
 
     @property
     def center(self):
@@ -84,6 +85,8 @@ class GameMap:
         for x in range(room.x1, room.x2):
             for y in range(room.y1, room.y2):
                 self.tiles[x][y] = Tile("Floor", ".", (200, 180, 50), True, False)
+
+    
 
     def create_h_tunnel(self, x1, x2, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):

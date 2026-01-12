@@ -63,7 +63,7 @@ class Engine:
         self.enemies = []
         self.log_messages = []  # List of log messages for rendering
         self.turn_count = 0
-        self.player_acted = False # Track if player has acted this turn
+        self.player_acted = True # Track if player has acted this turn
         self.camera = Camera(MAP_VIEW_WIDTH, MAP_VIEW_HEIGHT)
 
     def damage_entity(self, entity: Entity, damage: int):

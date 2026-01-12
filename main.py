@@ -29,7 +29,7 @@ def main ():
             log_x = 2
             log_y = MAP_VIEW_HEIGHT + 3
             log_height = SCREEN_HEIGHT - MAP_VIEW_HEIGHT - 3
-            
+
             if engine.game_state == engine.game_state.DEAD:
                 game_renderer.render_death_screen(root_console)
                 game_renderer.render_game_bounds(root_console)
@@ -40,11 +40,11 @@ def main ():
                 #clear the console
                 root_console.clear()
                 #Draw the map 
+                engine.camera.follow(engine.controlled_entity)
                 game_renderer.render_map(root_console, engine.game_map, engine.camera)
 
                 #Draw the entites at their current position
                 game_renderer.render_entities(root_console, engine.entities, engine.camera)
-                    
                 
                 game_renderer.render_game_bounds(root_console)
                 

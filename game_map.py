@@ -2,19 +2,22 @@ from constants import MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT, MAP_VIEW_WIDTH, MAP_VIE
 
 
 class Tile:
-    def __init__(self, name, glyph,colour, walkability, ):
+    def __init__(self, name:str, glyph:str,colour:tuple, walkability:bool, blocks_sight:bool = False):
         self.name = name
         self.colour = colour
         self.glyph = glyph
         self.iswalkable = walkability
+        self.blocks_sight = blocks_sight
         self.explored = False
 
 class GameMap:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.tiles = [
-            [Tile("Floor", ".", (200, 200, 200), True) for y in range(height)]
+        self.tiles = [[
+            Tile("Wall", "#", (100, 100, 100), walkability=False,blocks_sight= True) if x == 0 or y == 0 or x == width-1 or y == height-1
+            else Tile("Floor", ".", (200, 180, 50), walkability=True, blocks_sight= False)
+            for y in range(height)]
             for x in range(width)
         ]
 

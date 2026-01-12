@@ -41,7 +41,7 @@ def main ():
                 root_console.clear()
                 #Draw the map 
                 engine.camera.follow(engine.controlled_entity)
-                game_renderer.render_map(root_console, engine.world.game_map, engine.camera)
+                game_renderer.render_map(root_console, engine.world.game_map, engine.camera, engine.visible_tiles)
 
                 #Draw the entites at their current position
                 game_renderer.render_entities(root_console, engine.world.entities, engine.camera)

@@ -158,6 +158,7 @@ class Engine:
         if self.game_state != GameState.PLAYING:
             return
         self.camera.follow(self.controlled_entity)
+        self.visible_tiles = self.world.game_map.recompute_fov(self.controlled_entity.x, self.controlled_entity.y)
         self.handle_enemy_turns()
         self.turn_count += 1
         self.player_acted = False   

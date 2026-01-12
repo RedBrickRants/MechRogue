@@ -24,14 +24,19 @@ def render_entities(console, entities, camera):
         if 0 <= screen_x < camera.width and 0<=screen_y<camera.height:
             console.print(screen_x, screen_y, entity.char, fg=entity.colour)
     
-def render_map(console, map, camera):
+def render_map(console, map, camera, visible_tiles):
     for x in range(map.width):
         for y in range(map.height):
             screen_x = x-camera.x
             screen_y = y-camera.y
-            if 0<=screen_x<camera.width and 0<=screen_y<camera.height:
-                tile = map.tiles[x][y]
+            if not (0 <= screen_x < camera.width and 0 <= screen_y < camera.height):
+                continue
+            tile = map.tiles[x][y]
+            
+            if visible_tiles[x, y]:
                 console.print(screen_x, screen_y, tile.glyph, fg=tile.colour)
+            elif tile.explored:
+                console.print(screen_x, screen_y, tile.glyph, fg=(60, 60, 60))
         
 
 def render_stats(console, entity, start_x, start_y):

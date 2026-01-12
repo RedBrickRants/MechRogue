@@ -4,10 +4,24 @@ import tcod
 from collections import deque
 from dataclasses import dataclass # deque is a double-ended queue, useful for adding/removing list elements from both ends efficiently
 from game_entity import Entity
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, base_stats,mech_base_stats ,enemy_base_stats, MAP_WIDTH, MAP_HEIGHT
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, base_stats,mech_base_stats ,enemy_base_stats, MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT, MAP_VIEW_WIDTH, MAP_VIEW_HEIGHT
 import random
 from game_map import GameMap
 from game_input_handler import InputHandler
+
+class Camera:
+    def __init__(self,width, height):
+        self.x = 0
+        self.y = 0
+        self.width = width
+        self.height = height
+    def follow (self, target):
+        self.x = target.x -self.width //2
+        self.y = target.y - self.height//2
+        self.x = max(0, min(self.x, MAP_WORLD_WIDTH - self.width))
+        self.y = max(0, min(self.y, MAP_WORLD_HEIGHT - self.height))
+
+
 
 class GameState (Enum):
     PLAYING = auto()
@@ -39,9 +53,9 @@ class MessageLog:
 class Engine:
     def __init__(self):
         self.input_handler = InputHandler(self) # Initialize input handler
-        self.player = Entity("Player", "@", (255, 155, 55), SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, base_stats, is_mech=False, blocks=True)
-        self.mech = Entity("Mech", "M", (100, 100, 255), SCREEN_WIDTH // 2 + 1, SCREEN_HEIGHT // 2, mech_base_stats, is_mech=True, blocks=True)
-        self.game_map = GameMap()
+        self.player = Entity("Player", "@", (255, 155, 55), MAP_WORLD_WIDTH // 2, MAP_WORLD_HEIGHT // 2, base_stats, is_mech=False, blocks=True)
+        self.mech = Entity("Mech", "M", (100, 100, 255), MAP_WORLD_WIDTH // 2 + 1, MAP_WORLD_HEIGHT // 2, mech_base_stats, is_mech=True, blocks=True)
+        self.game_map = GameMap(MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT)
         self.game_state = GameState.PLAYING
         self.entities = [self.player, self.mech]
         self.controlled_entity = self.player
@@ -50,6 +64,7 @@ class Engine:
         self.log_messages = []  # List of log messages for rendering
         self.turn_count = 0
         self.player_acted = False # Track if player has acted this turn
+        self.camera = Camera(MAP_VIEW_WIDTH, MAP_VIEW_HEIGHT)
 
     def damage_entity(self, entity: Entity, damage: int):
         entity.stats["hp"] -= damage
@@ -99,8 +114,8 @@ class Engine:
 
     def spawn_enemy(self, x, y):
         while True:
-            x = random.randint(0, MAP_WIDTH - 1)
-            y = random.randint(0, MAP_HEIGHT - 1)
+            x = random.randint(0, MAP_WORLD_WIDTH - 1)
+            y = random.randint(0, MAP_WORLD_HEIGHT - 1)
             if not self.game_map.is_blocked(x, y, self.entities):
                 return Entity("Grunt", "g", (200, 50, 50), x, y, enemy_base_stats, is_mech=False, blocks=True)
             
@@ -170,6 +185,7 @@ class Engine:
             return
         if self.game_state != GameState.PLAYING:
             return
+        self.camera.follow(self.controlled_entity)
         self.handle_enemy_turns()
         self.turn_count += 1
         self.player_acted = False   

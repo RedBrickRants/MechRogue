@@ -4,7 +4,7 @@ import numpy as np
 from game_engine import Engine
 import random
 from typing import List, Tuple, Optional
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WIDTH, MAP_HEIGHT
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT, MAP_VIEW_WIDTH, MAP_VIEW_HEIGHT
 import game_renderer
 from game_entity import Entity
 
@@ -20,29 +20,36 @@ def main ():
     with tcod.context.new( columns= SCREEN_WIDTH, rows= SCREEN_HEIGHT, tileset=tileset, title="MechRogue") as context:
         #create the root console (the main console we will draw to)
         root_console = tcod.console.Console(SCREEN_WIDTH, SCREEN_HEIGHT, order="F")
-
+        
         #game loop 
         while True:
+            stats_x = MAP_VIEW_WIDTH + 2
+            stats_y = 3
+
+            log_x = 2
+            log_y = MAP_VIEW_HEIGHT + 3
+            log_height = SCREEN_HEIGHT - MAP_VIEW_HEIGHT - 3
+            
             if engine.game_state == engine.game_state.DEAD:
                 game_renderer.render_death_screen(root_console)
                 game_renderer.render_game_bounds(root_console)
                 game_renderer.render_log(root_console, engine.message_log.messages, log_x, log_y, log_height)
             else:
+                engine.update()
+
                 #clear the console
                 root_console.clear()
+                #Draw the map 
+                game_renderer.render_map(root_console, engine.game_map, engine.camera)
 
                 #Draw the entites at their current position
-                game_renderer.render_entities(root_console, engine.entities)
+                game_renderer.render_entities(root_console, engine.entities, engine.camera)
                     
-                #Draw the map 
+                
                 game_renderer.render_game_bounds(root_console)
+                
                 #Draw the player stats
-                stats_x = MAP_WIDTH + 2
-                stats_y = 3
-
-                log_x = 2
-                log_y = MAP_HEIGHT + 3
-                log_height = SCREEN_HEIGHT - MAP_HEIGHT - 3
+                
 
                 game_renderer.render_stats(root_console, engine.player, stats_x, stats_y)
 
@@ -61,6 +68,6 @@ def main ():
                     return  #exit game loop and end program
                 if engine.handle_input(event):
                     return
-            engine.update()
+            
 if __name__ == "__main__":
     main()

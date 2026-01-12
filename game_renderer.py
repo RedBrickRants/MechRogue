@@ -43,3 +43,7 @@ def render_log(console, log_messages: List[str], x, y, height):
         console.print(x, y+i, text, fg=message.colour)
 
 
+def render_death_screen(console):
+    console.clear()
+    console.print(MAP_WIDTH // 2 - 5, MAP_HEIGHT // 2, "YOU DIED", fg=(255, 0, 0))
+    console.print(MAP_WIDTH // 2 - 10, MAP_HEIGHT // 2 + 2, "Press 'q' to quit", fg=(255, 255, 255))

@@ -1,3 +1,4 @@
+from enum import Enum, auto
 import actions
 import tcod 
 from collections import deque
@@ -8,6 +9,10 @@ import random
 from game_map import GameMap
 from game_input_handler import InputHandler
 
+class GameState (Enum):
+    PLAYING = auto()
+    PAUSED = auto()
+    DEAD = auto()
 @dataclass
 class Message:
     text: str
@@ -37,6 +42,7 @@ class Engine:
         self.player = Entity("Player", "@", (255, 155, 55), SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, base_stats, is_mech=False, blocks=True)
         self.mech = Entity("Mech", "M", (100, 100, 255), SCREEN_WIDTH // 2 + 1, SCREEN_HEIGHT // 2, mech_base_stats, is_mech=True, blocks=True)
         self.game_map = GameMap()
+        self.game_state = GameState.PLAYING
         self.entities = [self.player, self.mech]
         self.controlled_entity = self.player
         self.message_log = MessageLog()
@@ -48,9 +54,17 @@ class Engine:
     def damage_entity(self, entity: Entity, damage: int):
         entity.stats["hp"] -= damage
         self.message_log.add(f"{entity.name} takes {damage} damage!", colour=(255, 0, 0))
-        if entity.stats["hp"] <= 0:
+        if entity.stats["hp"] <= 0 and entity.is_active:
             entity.is_active = False
             self.message_log.add(f"{entity.name} has been destroyed!", colour=(255, 0, 0))
+            if entity == self.player:
+                self.game_state = GameState.DEAD
+                self.message_log.add("You have been killed!", colour=(255, 0, 0))
+
+            if entity.is_mech and entity == self.controlled_entity:
+                self.exit_mech()
+                self.controlled_entity.stats["hp"] -= damage - entity.stats.get("armour", 0)
+                self.message_log.add("Your mech has been destroyed! You exit the mech.", colour=(255, 0, 0))
 
     def handle_enemy_turns(self):
         for enemy in self.enemies:
@@ -154,7 +168,8 @@ class Engine:
     def update(self):
         if not self.player_acted:
             return
-
+        if self.game_state != GameState.PLAYING:
+            return
         self.handle_enemy_turns()
         self.turn_count += 1
         self.player_acted = False   
@@ -170,6 +185,11 @@ class Engine:
         if result == "QUIT":
             return True
         self.player_acted = True
+
+        if self.game_state == GameState.DEAD:
+            if action.__class__ != actions.QuitAction:
+                self.message_log.add("You are dead! Press 'q' to quit.", colour=(255, 0, 0))
+
         return False
 
 

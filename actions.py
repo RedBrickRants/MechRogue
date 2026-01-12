@@ -17,6 +17,8 @@ class MoveAction(Action):
 
 class WaitAction(Action):
     def perform(self, engine):
+        if engine.game_state == engine.game_state.DEAD:
+            return
         engine.message_log.add(f"{self.entity.name} waits.", colour=(173, 216, 230))
 
 class ToggleControlAction(Action):

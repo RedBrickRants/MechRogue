@@ -1,3 +1,4 @@
+#game_entity.py
 from typing import Tuple
 import random
 

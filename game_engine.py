@@ -89,21 +89,8 @@ class Engine:
     
     def handle_enemy_turns(self):
         for enemy in self.world.enemies:
-            if not enemy.is_active:
-                continue
+            enemy.on_turn(self)
 
-            dx = self.controlled_entity.x - enemy.x
-            dy = self.controlled_entity.y - enemy.y
-
-            step_x = 0 if dx == 0 else (1 if dx > 0 else -1)
-            step_y = 0 if dy == 0 else (1 if dy > 0 else -1)
-
-            # Pick a direction to try (no pathfinding yet)
-            if abs(dx) > abs(dy):
-                self.try_move(enemy, step_x, 0)
-            else:
-                self.try_move(enemy, 0, step_y)
-    
     def find_exit_tile(self):
         for dx, dy in [(0,1), (1,0), (0,-1), (-1,0)]:
             x = self.world.mech.x + dx
@@ -164,7 +151,7 @@ class Engine:
     
     def try_move(self, entity, dx, dy):
         success, blocker = self.world.try_move_entity(entity, dx, dy)
-        if blocker:
+        if blocker and self.world.is_hostile(entity, blocker):
             attack = actions.AttackAction(entity, blocker)
             self.perform(attack)
 

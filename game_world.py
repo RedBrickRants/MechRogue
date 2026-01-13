@@ -9,7 +9,7 @@ class World:
     def __init__ (self):
         self.game_map = GameMap(MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT)
         self.first_room = self.game_map.rooms[0]
-        self.player = Entity("Player", "@", (255, 155, 55), self.first_room.center[0], self.first_room.center[1], base_stats, False, True)
+        self.player = Entity("Player", "@", (255, 155, 55), self.first_room.center[0], self.first_room.center[1], base_stats, False, True, "player")
         self.mech = Entity("Mech", "M", (100,100,255), self.first_room.center[0]+1, self.first_room.center[1], mech_base_stats, True, True)
 
         #Entity List
@@ -21,10 +21,14 @@ class World:
             x = random.randint(0, MAP_WORLD_WIDTH - 1)
             y = random.randint(0, MAP_WORLD_HEIGHT - 1)
 
-            if (not self.game_map.is_blocked(x, y, self.entities) and not self.game_map.is_tile_blocked(x, y)):
+            if (not self.game_map.is_blocked(x, y, self.entities) and not self.game_map.is_tile_blocked(x, y) and not self.first_room.contains(x, y)):
                 return x, y
 
-            
+    def is_in_any_room(self, x, y):
+        return any(room.contains(x, y) for room in self.game_map.rooms)    
+
+    def is_hostile(self, a, b):
+        return a.faction != b.faction    
 
     def get_blocking_entity_at(self, x, y):
         for entity in self.entities:

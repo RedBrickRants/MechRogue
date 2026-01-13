@@ -163,20 +163,10 @@ class Engine:
 
     
     def try_move(self, entity, dx, dy):
-        dest_x = entity.x + dx
-        dest_y = entity.y + dy
-        # Map bounds check
-        if not self.world.game_map.in_bounds(dest_x, dest_y):
-            return
-        blocker = self.world.get_blocking_entity_at(dest_x, dest_y)
+        success, blocker = self.world.try_move_entity(entity, dx, dy)
         if blocker:
             attack = actions.AttackAction(entity, blocker)
             self.perform(attack)
-            return
-        if self.world.game_map.is_tile_blocked(dest_x, dest_y):
-            return
-        entity.x = dest_x
-        entity.y = dest_y
 
     def perform(self, action):
         return action.perform(self) #do the action

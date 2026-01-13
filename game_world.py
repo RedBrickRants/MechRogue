@@ -26,7 +26,21 @@ class World:
                 return entity
         return None
 
-
+    def try_move_entity(self, entity, dx, dy):
+        dest_x = entity.x + dx
+        dest_y = entity.y + dy
+        # Map bounds check
+        if not self.game_map.in_bounds(dest_x, dest_y):
+            return (False, None)
+        blocker = self.get_blocking_entity_at(dest_x, dest_y)
+        if blocker:
+            return(False, blocker)
+        if self.game_map.is_tile_blocked(dest_x, dest_y):
+            return (False, None)
+        entity.x = dest_x
+        entity.y = dest_y
+        return (True, None)
+    
     def spawn_enemy(self, x=None, y=None, enemy_type="Grunt", ai_type="basic", traits=None):
         """Spawn a single enemy with optional AI and traits."""
         # Pick a random valid tile if no coords provided

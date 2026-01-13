@@ -18,7 +18,7 @@ class Stats:
         #for stat, value in self.base:
          #   return 
     def add_modifier(self, stat: str, modifier):
-        self.modifer.setdefault(stat, [].append(modifier))
+        self.modifiers.setdefault(stat, [].append(modifier))
 
 class Trait:
     def on_damage(self, entity, amount, source): pass

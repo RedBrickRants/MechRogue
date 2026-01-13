@@ -141,7 +141,7 @@ class Engine:
             if self.can_enter_mech():
                 self.enter_mech()
         elif self.controlled_entity == self.world.mech:
-           self.exit_mech()
+            self.exit_mech()
     
     def handle_mech_destroyed(self, mech: Entity):
         self.message_log.add("The mech explodes! You are violently ejected!", colour=(255, 50, 50))

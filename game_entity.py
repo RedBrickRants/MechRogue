@@ -18,7 +18,7 @@ class Stats:
         #for stat, value in self.base:
          #   return 
     def add_modifier(self, stat: str, modifier):
-        self.modifiers.setdefault(stat, [].append(modifier))
+        self.modifiers.setdefault(stat, []).append(modifier)
 
 class Trait:
     def on_damage(self, entity, amount, source): pass
@@ -88,7 +88,7 @@ class Enemy(Entity):
 
         def drop_loot(self, engine):
             for item, chance in self.loot_table:
-                if random() < chance:
+                if random.random() < chance:
                     engine.world.entities.append(item)  # Or a proper item spawn method
 
         def on_death(self, engine):

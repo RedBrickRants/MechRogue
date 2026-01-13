@@ -51,7 +51,6 @@ class MessageLog:
         self.messages.append(Message(text, colour))
 
 
-
 class Engine:
     def __init__(self):
         self.input_handler = InputHandler(self) # Initialize input handler
@@ -139,7 +138,7 @@ class Engine:
             self.exit_mech()
 
             # Apply ejection damage to player
-            ejection_damage = 5
+            ejection_damage = random.randint(5, 15)
             self.world.player.take_damage(ejection_damage, self.controlled_entity)
             self.message_log.add(f"You take {ejection_damage} damage from the ejection!", colour=(255, 100, 100))
 

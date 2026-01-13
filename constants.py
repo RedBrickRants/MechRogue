@@ -31,8 +31,8 @@ enemy_base_stats = {
 }
 
 mech_base_stats = {
-    "hp": 200,
-    "max_hp": 200,
+    "hp": 2,
+    "max_hp": 2,
     "melee": 15,
     "accuracy": 85,
     "evasion": 15,

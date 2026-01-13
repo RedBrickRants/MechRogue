@@ -111,3 +111,6 @@ class Enemy(Entity):
             self.drop_loot(engine)
             for trait in self.traits:
                 trait.on_death(self, engine)
+
+class Mech(Entity):
+    pass

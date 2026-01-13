@@ -9,7 +9,7 @@ class World:
         self.game_map = GameMap(MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT)
         self.first_room = self.game_map.rooms[0]
         self.player = Entity("Player", "@", (255, 155, 55), self.first_room.center[0], self.first_room.center[1], base_stats, False, True)
-        self.mech = Entity("Mech", "M", (100,100,255), self.first_room.center[0]+1, self.first_room.center[1], mech_base_stats, False, True)
+        self.mech = Entity("Mech", "M", (100,100,255), self.first_room.center[0]+1, self.first_room.center[1], mech_base_stats, True, True)
 
         #Entity List
         self.entities=[self.player, self.mech]

@@ -62,6 +62,10 @@ class Engine:
         self.turn_count = 0
         self.player_acted = True # Track if player has acted this turn
         self.camera = Camera(MAP_VIEW_WIDTH, MAP_VIEW_HEIGHT)
+        self.visible_tiles = self.world.game_map.recompute_fov(
+            self.controlled_entity.x,
+            self.controlled_entity.y
+        )
 
     def damage_entity(self, entity: Entity, damage: int):
         entity.stats["hp"] -= damage

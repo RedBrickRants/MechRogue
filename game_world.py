@@ -1,4 +1,4 @@
-from game_entity import Entity
+from game_entity import Entity, Enemy
 from game_map import GameMap
 from constants import MAP_WORLD_WIDTH, MAP_WORLD_HEIGHT, base_stats, mech_base_stats, enemy_base_stats
 import random
@@ -27,15 +27,52 @@ class World:
         return None
 
 
-    def spawn_enemy(self, x, y):
+    def spawn_enemy(self, x=None, y=None, enemy_type="Grunt", ai_type="basic", traits=None):
+        """Spawn a single enemy with optional AI and traits."""
+        # Pick a random valid tile if no coords provided
         while True:
-            x = random.randint(0, MAP_WORLD_WIDTH - 1)
-            y = random.randint(0, MAP_WORLD_HEIGHT - 1)
-            if not self.game_map.is_blocked(x, y, self.entities) and not self.game_map.is_tile_blocked(x,y):
-                return Entity("Grunt", "g", (200, 50, 50), x, y, enemy_base_stats, is_mech=False, blocks=True)
-        
+            if x is None or y is None:
+                x = random.randint(0, MAP_WORLD_WIDTH - 1)
+                y = random.randint(0, MAP_WORLD_HEIGHT - 1)
+
+            if not self.game_map.is_blocked(x, y, self.entities) and not self.game_map.is_tile_blocked(x, y):
+                break
+            # If blocked, try again
+            x, y = None, None
+
+        # Create enemy based on type
+        if enemy_type == "Grunt":
+            name, char, colour, base_stats_used = "Grunt", "g", (200, 50, 50), enemy_base_stats
+        elif enemy_type == "Brute":
+            name, char, colour, base_stats_used = "Brute", "B", (150, 0, 0), {**enemy_base_stats, "hp": 80, "melee": 15, "armor": 5}
+        elif enemy_type == "Scout":
+            name, char, colour, base_stats_used = "Scout", "s", (100, 200, 50), {**enemy_base_stats, "speed": 120, "hp": 40}
+        elif enemy_type == "Scarab":
+            name, char, colour, base_stats_used = "Scarab", "S", (120, 130, 140), {**enemy_base_stats, "hp": 130, "melee": 30, "armour": 10}
+        else:
+            name, char, colour, base_stats_used = "Unknown", "?", (255,255,255), enemy_base_stats
+
+        enemy = Enemy(
+            name=name,
+            char=char,
+            colour=colour,
+            x=x,
+            y=y,
+            base_stats=base_stats_used,
+            ai_type=ai_type,
+            traits=traits
+        )
+
+        # Add to world
+        self.enemies.append(enemy)
+        self.entities.append(enemy)
+
+        return enemy
+
     def spawn_enemies(self, count: int):
+        """Spawn multiple enemies randomly."""
         for _ in range(count):
-            enemy = self.spawn_enemy(0, 0)
-            self.enemies.append(enemy)
-            self.entities.append(enemy)
+            # Example: randomize enemy type and AI
+            enemy_type = random.choice(["Grunt", "Brute", "Scout"])
+            ai_type = random.choice(["basic", "chaotic"])
+            self.spawn_enemy(enemy_type=enemy_type, ai_type=ai_type)

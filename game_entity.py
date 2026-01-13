@@ -1,4 +1,5 @@
 from typing import Tuple
+import random
 
 class Stats:
     def __init__(self, base: dict):
@@ -47,4 +48,51 @@ class Entity:
         self.stats.set_stat("hp", max(0, new_hp))
         return final
 
-        
+class Enemy(Entity):
+        def __init__(self, name = "Grunt", char = "g", colour = (200,50,50), x = 0, y = 0, base_stats=None, traits=None, ai_type="basic"):
+            from constants import enemy_base_stats
+
+            base_stats = base_stats or enemy_base_stats
+            super().__init__(name,char, colour, x, y, base_stats, is_mech=False, blocks=True)
+            self.ai_type = ai_type
+
+            self.traits = traits or []
+
+            self.loot_table = []
+        def on_turn(self, engine):
+            if not self.is_active:
+                return
+            target = engine.controlled_entity
+
+            if self.ai_type == "basic":
+                self.basic_ai_move(engine, target)
+            if self.ai_type == "chaotic":
+                self.chaotic_ai_move(engine)
+
+        def basic_ai_move(self, engine, target):
+            dx = target.x - self.x
+            dy = target.y - self.y
+            step_x = 0 if dx == 0 else (1 if dx > 0 else -1)
+            step_y = 0 if dy == 0 else (1 if dy > 0 else -1)
+
+            if abs(dx) > abs(dy):
+                engine.try_move(self, step_x, 0)
+            else:
+                engine.try_move(self, 0, step_y)
+
+        def chaotic_ai_move(self, engine):
+            # Random movement each turn
+            dx = random.randint(-1,1)
+            dy = random.randint(-1,1)
+            engine.try_move(self, dx, dy)
+
+        def drop_loot(self, engine):
+            for item, chance in self.loot_table:
+                if random() < chance:
+                    engine.world.entities.append(item)  # Or a proper item spawn method
+
+        def on_death(self, engine):
+            self.is_active = False
+            self.drop_loot(engine)
+            for trait in self.traits:
+                trait.on_death(self, engine)

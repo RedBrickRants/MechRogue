@@ -22,7 +22,7 @@ def render_entities(console, entities, camera, visible_tiles):
 
         if not visible_tiles[entity.x, entity.y]:
             continue
-        
+
         screen_x = entity.x -camera.x
         screen_y = entity.y -camera.y
 
@@ -51,7 +51,7 @@ def render_stats(console, entity, start_x, start_y):
     console.print(start_x, y, entity.name, fg=(255, 255, 0))
     y += 1
 
-    for stat, value in entity.stats.items():
+    for stat, value in entity.stats.base.items():
         console.print(start_x, y, f"{stat.upper()}: {value}")
         y += 1
 

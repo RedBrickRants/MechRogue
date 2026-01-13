@@ -57,7 +57,7 @@ def main ():
 
                 game_renderer.render_stats(root_console, engine.world.player, stats_x, stats_y)
 
-                stats_y += len(engine.world.player.stats) + 2  #space between stat panels
+                stats_y += len(engine.world.player.stats.base.items()) + 2  #space between stat panels
                 if engine.controlled_entity != engine.world.player:
                     game_renderer.render_stats(root_console, engine.controlled_entity, stats_x, stats_y)
                     

@@ -34,8 +34,11 @@ class AttackAction(Action):
         super().__init__(entity)
         self.target = target
     def perform(self, engine):
-        engine.damage_entity(self.target, self.entity.stats.get("melee", 0))
-
+        damage_done = self.target.take_damage(self.entity.stats.get_stat("melee"), source=self.entity)
+        engine.message_log.add(f"{self.entity.name} deals {damage_done} damage to {self.target.name} ")
+        
+        if self.target.stats.get_stat("hp") <= 0 and self.target.is_active:
+            engine.handle_death(self.target)
 class PickupItemAction(Action):
     pass
 class DropItemAction(Action):

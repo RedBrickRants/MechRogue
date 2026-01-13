@@ -67,24 +67,18 @@ class Engine:
             self.controlled_entity.y
         )
 
-    def damage_entity(self, entity: Entity, damage: int):
-        entity.stats["hp"] -= damage
-        self.message_log.add(f"{entity.name} takes {damage} damage!", colour=(255, 0, 0))
-
-        if entity.stats["hp"] > 0 or not entity.is_active:
-            return
-
+    def handle_death(self, entity: Entity):
         if entity.is_mech:
             self.handle_mech_destroyed(entity)
             return
 
-        # Normal entity death
         entity.is_active = False
         self.message_log.add(f"{entity.name} has been destroyed!", colour=(255, 0, 0))
 
         if entity == self.world.player:
             self.game_state = GameState.DEAD
             self.message_log.add("You have been killed!", colour=(255, 0, 0))
+
 
     def refresh_view(self):
         self.camera.follow(self.controlled_entity)
@@ -136,7 +130,7 @@ class Engine:
 
 
     def can_enter_mech(self) -> bool:
-        if self.world.mech.stats["hp"] <= 0:
+        if self.world.mech.stats.get_stat("hp") <= 0:
             return False
         dx = abs(self.world.player.x - self.world.mech.x)
         dy = abs(self.world.player.y - self.world.mech.y)
@@ -158,10 +152,10 @@ class Engine:
 
             # Apply ejection damage to player
             ejection_damage = 5
-            self.world.player.stats["hp"] -= ejection_damage
+            self.world.player.take_damage(ejection_damage, self.controlled_entity)
             self.message_log.add(f"You take {ejection_damage} damage from the ejection!", colour=(255, 100, 100))
 
-            if self.world.player.stats["hp"] <= 0:
+            if self.world.player.stats.get_stat("hp") <= 0:
                 self.game_state = GameState.DEAD
                 self.message_log.add("You died during the ejection.", colour=(255, 0, 0))
 

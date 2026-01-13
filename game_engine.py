@@ -66,18 +66,29 @@ class Engine:
     def damage_entity(self, entity: Entity, damage: int):
         entity.stats["hp"] -= damage
         self.message_log.add(f"{entity.name} takes {damage} damage!", colour=(255, 0, 0))
-        if entity.stats["hp"] <= 0 and entity.is_active:
-            entity.is_active = False
-            self.message_log.add(f"{entity.name} has been destroyed!", colour=(255, 0, 0))
-            if entity == self.world.player:
-                self.game_state = GameState.DEAD
-                self.message_log.add("You have been killed!", colour=(255, 0, 0))
 
-            if entity.is_mech and entity == self.controlled_entity:
-                self.exit_mech()
-                self.controlled_entity.stats["hp"] -= damage - entity.stats.get("armour", 0)
-                self.message_log.add("Your mech has been destroyed! You exit the mech.", colour=(255, 0, 0))
+        if entity.stats["hp"] > 0 or not entity.is_active:
+            return
 
+        if entity.is_mech:
+            self.handle_mech_destroyed(entity)
+            return
+
+        # Normal entity death
+        entity.is_active = False
+        self.message_log.add(f"{entity.name} has been destroyed!", colour=(255, 0, 0))
+
+        if entity == self.world.player:
+            self.game_state = GameState.DEAD
+            self.message_log.add("You have been killed!", colour=(255, 0, 0))
+
+    def refresh_view(self):
+        self.camera.follow(self.controlled_entity)
+        self.visible_tiles = self.world.game_map.recompute_fov(
+            self.controlled_entity.x,
+            self.controlled_entity.y
+        )
+    
     def handle_enemy_turns(self):
         for enemy in self.world.enemies:
             if not enemy.is_active:
@@ -108,6 +119,8 @@ class Engine:
         self.world.player.is_active = False
         self.world.player.container = self.world.mech
         self.controlled_entity = self.world.mech
+        self.refresh_view()
+
 
     def exit_mech(self):
         self.message_log.add("You exit the mech.", colour=(255, 255, 0))
@@ -115,6 +128,8 @@ class Engine:
         self.world.player.container = None
         self.world.player.x, self.world.player.y = self.find_exit_tile()
         self.controlled_entity = self.world.player
+        self.refresh_view()
+
 
     def can_enter_mech(self) -> bool:
         if self.world.mech.stats["hp"] <= 0:
@@ -129,6 +144,25 @@ class Engine:
                 self.enter_mech()
         elif self.controlled_entity == self.world.mech:
            self.exit_mech()
+    
+    def handle_mech_destroyed(self, mech: Entity):
+        self.message_log.add("The mech explodes! You are violently ejected!", colour=(255, 50, 50))
+
+        # Force exit BEFORE deactivating mech
+        if self.controlled_entity == mech:
+            self.exit_mech()
+
+            # Apply ejection damage to player
+            ejection_damage = 5
+            self.world.player.stats["hp"] -= ejection_damage
+            self.message_log.add(f"You take {ejection_damage} damage from the ejection!", colour=(255, 100, 100))
+
+            if self.world.player.stats["hp"] <= 0:
+                self.game_state = GameState.DEAD
+                self.message_log.add("You died during the ejection.", colour=(255, 0, 0))
+
+        mech.is_active = False
+
     
     def try_move(self, entity, dx, dy):
         dest_x = entity.x + dx

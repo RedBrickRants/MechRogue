@@ -48,7 +48,7 @@ def main ():
                 game_renderer.render_map(root_console, engine.world.game_map, engine.camera, engine.visible_tiles)
 
                 #Draw the entites at their current position
-                game_renderer.render_entities(root_console, engine.world.entities, engine.camera)
+                game_renderer.render_entities(root_console, engine.world.entities, engine.camera, engine.visible_tiles)
                 
                 game_renderer.render_game_bounds(root_console)
                 

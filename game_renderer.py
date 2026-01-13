@@ -19,19 +19,26 @@ def render_entities(console, entities, camera, visible_tiles):
     for entity in entities:
         if not entity.is_active:
             continue
+
+        if not visible_tiles[entity.x, entity.y]:
+            continue
+        
         screen_x = entity.x -camera.x
         screen_y = entity.y -camera.y
-        if 0 <= screen_x < camera.width and 0<=screen_y<camera.height:
-            console.print(screen_x, screen_y, entity.char, fg=entity.colour)
+
+        if not (0 <= screen_x < camera.width and 0<=screen_y<camera.height):
+            continue
+  
+        console.print(screen_x, screen_y, entity.char, fg=entity.colour)
     
-def render_map(console, map, camera, visible_tiles):
-    for x in range(map.width):
-        for y in range(map.height):
+def render_map(console, game_map, camera, visible_tiles):
+    for x in range(game_map.width):
+        for y in range(game_map.height):
             screen_x = x-camera.x
             screen_y = y-camera.y
             if not (0 <= screen_x < camera.width and 0 <= screen_y < camera.height):
                 continue
-            tile = map.tiles[x][y]
+            tile = game_map.tiles[x][y]
 
             if visible_tiles[x, y]:
                 console.print(screen_x, screen_y, tile.glyph, fg=tile.colour)
